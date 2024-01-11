@@ -2,16 +2,8 @@
 import tkinter as tk
 from tkinter import messagebox
 import csv_handling
-from enum import IntEnum
 
 class GroupMakerGUI:
-
-    # In the GUI, when a player name is clicked within the list, it will move to a different list. The
-    # list it will move to will be determined by the player list move mode (radiobuttons are used for selecting mode).
-    class PlayerMoveModeOptions(IntEnum):
-        UNAVAILABLE_POTENTIAL = 0   # Player names will move between unavailable and potential players lists.
-        UNAVAILABLE_AVAILABLE = 1   # Player names will move between unavailable and available players lists.
-
     def __init__(self) -> None:
         try:
             self.player_list = csv_handling.read_csv_to_list()
@@ -50,35 +42,48 @@ class GroupMakerGUI:
         self.available_players_listbox = tk.Listbox(left_section_frame, activestyle='none', width=30, height=30)
         self.available_players_listbox.grid(row=1, column=2, padx=20)
 
-        self.player_move_mode = tk.IntVar()
-        self.player_move_mode.set(self.PlayerMoveModeOptions.UNAVAILABLE_AVAILABLE.value)
-        self.update_availability_labels()
+        self.activate_potential_players_listbox_button = tk.Button(left_section_frame, text='Activate List', font=('Arial', 10),
+            state='normal', command=self.activate_listbox_button_handling)
+        self.activate_potential_players_listbox_button.grid(row=2, column=1, pady=15)
 
-        player_move_mode_frame = tk.LabelFrame(left_section_frame, text='Player Move Mode', font=('Arial', 10), labelanchor='n')
-        player_move_mode_frame.grid(row=2, column=0, columnspan=3, pady=20)
-        player_move_unavailable_available_radiobutton = tk.Radiobutton(player_move_mode_frame, text='Unavailable-Available', font=('Arial', 10),
-            variable=self.player_move_mode, value=self.PlayerMoveModeOptions.UNAVAILABLE_AVAILABLE.value, command=self.update_availability_labels)
-        player_move_unavailable_available_radiobutton.pack(side='left')
-        player_move_unavailable_possible_radiobutton = tk.Radiobutton(player_move_mode_frame, text='Unavailable-Potential', font=('Arial', 10),
-            variable=self.player_move_mode, value=self.PlayerMoveModeOptions.UNAVAILABLE_POTENTIAL.value, command=self.update_availability_labels)
-        player_move_unavailable_possible_radiobutton.pack(side='left')
+        self.activate_available_players_listbox_button = tk.Button(left_section_frame, text='Activate List', font=('Arial', 10),
+            state='disabled', command=self.activate_listbox_button_handling)
+        self.activate_available_players_listbox_button.grid(row=2, column=2, pady=15)
 
-    def update_availability_labels(self):
-        if self.player_move_mode.get() == self.PlayerMoveModeOptions.UNAVAILABLE_AVAILABLE.value:
-            self.unavailable_label.config(bg='yellow')
-            self.unavailable_players_listbox.config(state='normal', bg='white')
-            self.potential_players_label.config(bg='#f0f0f0')   # '#f0f0f0' is the default background color.
-            self.potential_players_listbox.config(state='disabled', bg='#d9d9d9')   # '#d9d9d9' is a gray color.
+        self.update_availability_labels_and_listboxes()
+
+    def activate_listbox_button_handling(self):
+        if self.activate_available_players_listbox_button['state'] == 'normal':
+            self.activate_available_players_listbox_button.config(state='disabled')
+            self.activate_potential_players_listbox_button.config(state='normal')
+
+        elif self.activate_potential_players_listbox_button['state'] == 'normal':
+            self.activate_available_players_listbox_button.config(state='normal')
+            self.activate_potential_players_listbox_button.config(state='disabled')
+
+        self.update_availability_labels_and_listboxes()
+
+    def update_availability_labels_and_listboxes(self):
+        self.unavailable_label.config(bg='yellow')
+        self.unavailable_players_listbox.config(state='normal', bg='white')
+
+        if self.activate_potential_players_listbox_button['state'] == 'normal':
             self.available_label.config(bg='yellow')
             self.available_players_listbox.config(state='normal', bg='white')
+            self.potential_players_label.config(bg='#f0f0f0')   # '#f0f0f0' is the default background color.
+            self.potential_players_listbox.config(state='disabled', bg='#d9d9d9')   # '#d9d9d9' is a gray color.
 
-        elif self.player_move_mode.get() == self.PlayerMoveModeOptions.UNAVAILABLE_POTENTIAL.value:
-            self.unavailable_label.config(bg='yellow')
-            self.unavailable_players_listbox.config(state='normal', bg='white')
+            self.activate_available_players_listbox_button.grid_forget()   # Hides button.
+            self.activate_potential_players_listbox_button.grid(row=2, column=1, pady=15)   # Adds button back in.
+
+        elif self.activate_available_players_listbox_button['state'] == 'normal':
             self.potential_players_label.config(bg='yellow')
             self.potential_players_listbox.config(state='normal', bg='white')
             self.available_label.config(bg='#f0f0f0')   # '#f0f0f0' is the default background color.
             self.available_players_listbox.config(state='disabled', bg='#d9d9d9')   # '#d9d9d9' is a gray color.
+
+            self.activate_potential_players_listbox_button.grid_forget()   # Hides button.
+            self.activate_available_players_listbox_button.grid(row=2, column=2, pady=15)   # Adds button back in.
 
     # This section contains settings for player distribution and number of groups, and displays the current settings.
     # There are also buttons for editing player list and creating the groups here.
