@@ -7,10 +7,15 @@ class GroupMakerGUI:
     def __init__(self) -> None:
         try:
             self.player_list = csv_handling.read_csv_to_list()
+
         except FileNotFoundError:
             print('File not found. Creating new CSV file.')
             csv_handling.create_blank_csv_with_header()
             self.player_list = []
+
+        self.unavailable_players = self.player_list.copy()
+        self.potential_players = []
+        self.available_players = []
 
         self.root = tk.Tk()
         self.root.title('Group Maker')
@@ -29,18 +34,22 @@ class GroupMakerGUI:
 
         self.unavailable_label = tk.Label(left_section_frame, text='Unavailable Players', font=('Arial', 14))
         self.unavailable_label.grid(row=0, column=0)
-        self.unavailable_players_listbox = tk.Listbox(left_section_frame, activestyle='none', width=30, height=30)
+        self.unavailable_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
         self.unavailable_players_listbox.grid(row=1, column=0, padx=20)
 
         self.potential_players_label = tk.Label(left_section_frame, text='Potential Players', font=('Arial', 14))
         self.potential_players_label.grid(row=0, column=1)
-        self.potential_players_listbox = tk.Listbox(left_section_frame, activestyle='none', width=30, height=30)
+        self.potential_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
         self.potential_players_listbox.grid(row=1, column=1, padx=20)
 
         self.available_label = tk.Label(left_section_frame, text='Available Players', font=('Arial', 14))
         self.available_label.grid(row=0, column=2)
-        self.available_players_listbox = tk.Listbox(left_section_frame, activestyle='none', width=30, height=30)
+        self.available_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
         self.available_players_listbox.grid(row=1, column=2, padx=20)
+
+        self.unavailable_players_listbox.bind('<<ListboxSelect>>', self.on_unavailable_listbox_select)
+        self.potential_players_listbox.bind('<<ListboxSelect>>', self.on_potential_listbox_select)
+        self.available_players_listbox.bind('<<ListboxSelect>>', self.on_available_listbox_select)
 
         self.activate_potential_players_listbox_button = tk.Button(left_section_frame, text='Activate List', font=('Arial', 10),
             state='normal', command=self.activate_listbox_button_handling)
@@ -51,6 +60,50 @@ class GroupMakerGUI:
         self.activate_available_players_listbox_button.grid(row=2, column=2, pady=15)
 
         self.update_availability_labels_and_listboxes()
+
+    # - This is a callback function that gets called when an item is selected within the unavailable listbox.
+    # - When a player name is selected from the listbox, it will be moved to a the other active listbox.
+    def on_unavailable_listbox_select(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+
+            # Copies the name to the other list and deletes the element from the original list.
+            if self.activate_potential_players_listbox_button['state'] == 'disabled':   # This means potential players listbox is activated.
+                self.potential_players.append(self.unavailable_players[index])
+                del self.unavailable_players[index]
+
+            elif self.activate_available_players_listbox_button['state'] == 'disabled':   # This means available players listbox is activated.
+                self.available_players.append(self.unavailable_players[index])
+                del self.unavailable_players[index]
+
+            self.update_availability_labels_and_listboxes()
+
+    # - This is a callback function that gets called when an item is selected within the potential listbox.
+    # - When a player name is selected from the listbox, it will be moved to a the other active listbox.
+    def on_potential_listbox_select(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+
+            # Copies the name to the other list and deletes the element from the original list.
+            self.unavailable_players.append(self.potential_players[index])
+            del self.potential_players[index]
+
+            self.update_availability_labels_and_listboxes()
+
+    # - This is a callback function that gets called when an item is selected within the available listbox.
+    # - When a player name is selected from the listbox, it will be moved to a the other active listbox.
+    def on_available_listbox_select(self, event):
+        selection = event.widget.curselection()
+        if selection:
+            index = selection[0]
+
+            # Copies the name to the other list and deletes the element from the original list.
+            self.unavailable_players.append(self.available_players[index])
+            del self.available_players[index]
+
+            self.update_availability_labels_and_listboxes()
 
     def activate_listbox_button_handling(self):
         if self.activate_available_players_listbox_button['state'] == 'normal':
@@ -63,9 +116,42 @@ class GroupMakerGUI:
 
         self.update_availability_labels_and_listboxes()
 
+    # - Alphabetically sorts availability lists.
     def update_availability_labels_and_listboxes(self):
+        self.unavailable_players.sort()
+        self.potential_players.sort()
+        self.available_players.sort()
+
         self.unavailable_label.config(bg='yellow')
         self.unavailable_players_listbox.config(state='normal', bg='white')
+
+        # Don't need to keep track of the unavailable players listbox because it will never be disabled.
+        state_potential_players_listbox = self.potential_players_listbox['state']
+        state_available_players_listbox = self.available_players_listbox['state']
+
+        # Change the state of these listboxes to 'normal' because disabled listboxes cannot be updated.
+        # After modifying the listboxes, the listbox states will be changed back to their original state.
+        self.potential_players_listbox.config(state='normal')
+        self.available_players_listbox.config(state='normal')
+
+        # Clear all names from listboxes before reloading them.
+        self.unavailable_players_listbox.delete(0, 'end')
+        self.potential_players_listbox.delete(0, 'end')
+        self.available_players_listbox.delete(0, 'end')
+
+
+        for i in range(len(self.unavailable_players)):
+            # Insert first + last name into listbox
+            self.unavailable_players_listbox.insert(i, f'{self.unavailable_players[i][0]} {self.unavailable_players[i][1]}')
+
+        for i in range(len(self.potential_players)):
+            self.potential_players_listbox.insert(i, f'{self.potential_players[i][0]} {self.potential_players[i][1]}')
+
+        for i in range(len(self.available_players)):
+            self.available_players_listbox.insert(i, f'{self.available_players[i][0]} {self.available_players[i][1]}')
+
+        self.potential_players_listbox.config(state=state_potential_players_listbox)
+        self.available_players_listbox.config(state=state_available_players_listbox)
 
         if self.activate_potential_players_listbox_button['state'] == 'normal':
             self.available_label.config(bg='yellow')
@@ -182,10 +268,11 @@ class GroupMakerGUI:
             self.add_player_button.config(state='normal', bg='#2b5ffc', fg='white')   # '#2b5ffc' is blue.
         else:
             self.add_player_button.config(state='disabled', bg='#b5baf5')   # '#b5baf5' is a faded light blue color.   
-            
+
     # - Adds a player to self.player_list and sorts the new player alphabetically. The player list window and the CSV file are both updated.
     # - If a player name exists already, an error message will be given.
     # - The players first and last name will be formatted so the first letter in each word is capitalized, and the other letters are lowercase.
+    # - The availability listboxes will also be updated to include the newly added name. The new names will be placed in the unavailable listbox.
     def add_player(self) -> None:
         # .title() capitalizes first letter of each word
         current_first_name = self.first_name.get().title()
@@ -200,15 +287,32 @@ class GroupMakerGUI:
                 break
 
         if does_player_already_exist == False:
-            self.player_list.append([current_first_name, current_last_name, self.is_veteran_leader.get(), self.skill_level.get()])
+            current_player_data = [current_first_name, current_last_name, self.is_veteran_leader.get(), self.skill_level.get()]
+
+            self.player_list.append(current_player_data)
             self.player_list.sort()   # Sorts rows so the names are alphabetically organized.
 
             self.update_player_list_frame()
             csv_handling.write_list_to_csv(self.player_list)
 
+            self.unavailable_players.append(current_player_data)   # Newly added player data always go to the unavailable list.
+            self.update_availability_labels_and_listboxes()
+
     # - Removes a player from self.player_list, updates the player list window, and updates the CSV file.
     # - index -> This is the index of the value that is to be deleted from self.player_list.
+    # - Removes the player from the availability listbox on the main page.
     def remove_player(self, index: int) -> None:
+
+        # If the player that is to be removed exists in any of the availability lists, remove the name.
+        if self.player_list[index] in self.unavailable_players:
+            self.unavailable_players.remove(self.player_list[index])
+        elif self.player_list[index] in self.potential_players:
+            self.potential_players.remove(self.player_list[index])
+        elif self.player_list[index] in self.available_players:
+            self.available_players.remove(self.player_list[index])
+
+        self.update_availability_labels_and_listboxes()
+
         del self.player_list[index]
         self.update_player_list_frame()
         csv_handling.write_list_to_csv(self.player_list)
