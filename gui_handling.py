@@ -139,7 +139,6 @@ class GroupMakerGUI:
         self.potential_players_listbox.delete(0, 'end')
         self.available_players_listbox.delete(0, 'end')
 
-
         for i in range(len(self.unavailable_players)):
             # Insert first + last name into listbox
             self.unavailable_players_listbox.insert(i, f'{self.unavailable_players[i][0]} {self.unavailable_players[i][1]}')
@@ -238,8 +237,8 @@ class GroupMakerGUI:
 
         buttons_frame = tk.Frame(right_section_frame, bg='orange', padx=5, pady=5)
         buttons_frame.pack(pady=(20, 0))
-        edit_player_list_button = tk.Button(buttons_frame, text='Edit Player List', font=('Arial', 12), command=self.open_player_list_window)
-        edit_player_list_button.grid(row=0, column=0, padx=10)
+        self.edit_player_list_button = tk.Button(buttons_frame, text='Edit Player List', font=('Arial', 12), command=self.open_player_list_window)
+        self.edit_player_list_button.grid(row=0, column=0, padx=10)
         create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white')
         create_groups_button.grid(row=0, column=1, padx=10)
 
@@ -249,15 +248,26 @@ class GroupMakerGUI:
     def update_number_of_gyms_label(self) -> None:
         self.number_of_gyms_label.config(text=f'Number of gyms = {self.number_of_gyms.get()}')
 
+    # Opens a popup window to allow the user to see the current player list and make adjustments.
     def open_player_list_window(self) -> None:
-        player_list_popup_window = tk.Toplevel(self.root)
-        player_list_popup_window.title('Edit Player List')
+        self.edit_player_list_button.config(state='disabled')
+        self.player_list_popup_window = tk.Toplevel(self.root)
+
+        # When the player list popup window is closed, execute the callback function.
+        self.player_list_popup_window.protocol('WM_DELETE_WINDOW', self.on_player_list_window_closing)
+
+        self.player_list_popup_window.title('Edit Player List')
 
         # All widgets within this frame will get destroyed when rewriting the player list.
-        self.player_list_frame = tk.Frame(player_list_popup_window)
+        self.player_list_frame = tk.Frame(self.player_list_popup_window)
         self.player_list_frame.pack()
 
         self.update_player_list_frame()
+
+    # Turns the edit player list button back to normal and then destroys the player list popup window.
+    def on_player_list_window_closing(self):
+        self.edit_player_list_button.config(state='normal')
+        self.player_list_popup_window.destroy()
 
     # - Makes sure that the entry boxes for the first and last name are not empty. If one or both of these
     #       entry boxes are empty, the add player button will be disabled.

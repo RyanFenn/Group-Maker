@@ -35,7 +35,7 @@ def read_csv_to_list() -> list:
             # row = [First Name, Last Name, Veteran / Leader, Skill (1 to 3)]
             first_name = row[0]
             last_name = row[1]
-            is_veteran_leader = bool(row[2])
+            is_veteran_leader = True if row[2] == 'True' else False
             skill_level = int(row[3])
 
             data.append([first_name, last_name, is_veteran_leader, skill_level])
