@@ -34,18 +34,30 @@ class GroupMakerGUI:
 
         self.unavailable_label = tk.Label(left_section_frame, text='Unavailable Players', font=('Arial', 14))
         self.unavailable_label.grid(row=0, column=0)
-        self.unavailable_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
-        self.unavailable_players_listbox.grid(row=1, column=0, padx=20)
+        unavailable_players_listbox_frame = tk.Frame(left_section_frame)
+        unavailable_players_listbox_frame.grid(row=1, column=0, padx=(30, 0))
+        self.unavailable_players_listbox = tk.Listbox(unavailable_players_listbox_frame, activestyle='none', selectmode='single', width=30, height=30)
+        self.unavailable_players_listbox.pack(side='left', fill='both')
+        self.unavailable_players_scrollbar = tk.Scrollbar(unavailable_players_listbox_frame)
+        self.unavailable_players_scrollbar.pack(side='right', fill='both')
 
         self.potential_players_label = tk.Label(left_section_frame, text='Potential Players', font=('Arial', 14))
         self.potential_players_label.grid(row=0, column=1)
-        self.potential_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
-        self.potential_players_listbox.grid(row=1, column=1, padx=20)
+        potential_players_listbox_frame = tk.Frame(left_section_frame)
+        potential_players_listbox_frame.grid(row=1, column=1, padx=20)
+        self.potential_players_listbox = tk.Listbox(potential_players_listbox_frame, activestyle='none', selectmode='single', width=30, height=30)
+        self.potential_players_listbox.pack(side='left', fill='both')
+        self.potential_players_scrollbar = tk.Scrollbar(potential_players_listbox_frame)
+        self.potential_players_scrollbar.pack(side='right', fill='both')
 
         self.available_label = tk.Label(left_section_frame, text='Available Players', font=('Arial', 14))
         self.available_label.grid(row=0, column=2)
-        self.available_players_listbox = tk.Listbox(left_section_frame, activestyle='none', selectmode='single', width=30, height=30)
-        self.available_players_listbox.grid(row=1, column=2, padx=20)
+        available_players_listbox_frame = tk.Frame(left_section_frame)
+        available_players_listbox_frame.grid(row=1, column=2)
+        self.available_players_listbox = tk.Listbox(available_players_listbox_frame, activestyle='none', selectmode='single', width=30, height=30)
+        self.available_players_listbox.pack(side='left', fill='both')
+        self.available_players_scrollbar = tk.Scrollbar(available_players_listbox_frame)
+        self.available_players_scrollbar.pack(side='right', fill='both')
 
         self.unavailable_players_listbox.bind('<<ListboxSelect>>', self.on_unavailable_listbox_select)
         self.potential_players_listbox.bind('<<ListboxSelect>>', self.on_potential_listbox_select)
@@ -53,11 +65,9 @@ class GroupMakerGUI:
 
         self.activate_potential_players_listbox_button = tk.Button(left_section_frame, text='Activate List', font=('Arial', 10),
             state='normal', command=self.activate_listbox_button_handling)
-        self.activate_potential_players_listbox_button.grid(row=2, column=1, pady=15)
 
         self.activate_available_players_listbox_button = tk.Button(left_section_frame, text='Activate List', font=('Arial', 10),
             state='disabled', command=self.activate_listbox_button_handling)
-        self.activate_available_players_listbox_button.grid(row=2, column=2, pady=15)
 
         self.update_availability_labels_and_listboxes()
 
@@ -122,7 +132,6 @@ class GroupMakerGUI:
         self.potential_players.sort()
         self.available_players.sort()
 
-        self.unavailable_label.config(bg='yellow')
         self.unavailable_players_listbox.config(state='normal', bg='white')
 
         # Don't need to keep track of the unavailable players listbox because it will never be disabled.
@@ -153,22 +162,29 @@ class GroupMakerGUI:
         self.available_players_listbox.config(state=state_available_players_listbox)
 
         if self.activate_potential_players_listbox_button['state'] == 'normal':
-            self.available_label.config(bg='yellow')
             self.available_players_listbox.config(state='normal', bg='white')
             self.potential_players_label.config(bg='#f0f0f0')   # '#f0f0f0' is the default background color.
             self.potential_players_listbox.config(state='disabled', bg='#d9d9d9')   # '#d9d9d9' is a gray color.
 
             self.activate_available_players_listbox_button.grid_forget()   # Hides button.
-            self.activate_potential_players_listbox_button.grid(row=2, column=1, pady=15)   # Adds button back in.
+            self.activate_potential_players_listbox_button.grid(row=2, column=1, padx=(70), pady=15, sticky='w')   # Adds button back in.
 
         elif self.activate_available_players_listbox_button['state'] == 'normal':
-            self.potential_players_label.config(bg='yellow')
             self.potential_players_listbox.config(state='normal', bg='white')
             self.available_label.config(bg='#f0f0f0')   # '#f0f0f0' is the default background color.
             self.available_players_listbox.config(state='disabled', bg='#d9d9d9')   # '#d9d9d9' is a gray color.
 
             self.activate_potential_players_listbox_button.grid_forget()   # Hides button.
-            self.activate_available_players_listbox_button.grid(row=2, column=2, pady=15)   # Adds button back in.
+            self.activate_available_players_listbox_button.grid(row=2, column=2, padx=(50), pady=15, sticky='w')   # Adds button back in.
+
+        self.unavailable_players_listbox.config(yscrollcommand=self.unavailable_players_scrollbar.set)
+        self.unavailable_players_scrollbar.config(command=self.unavailable_players_listbox.yview)
+
+        self.potential_players_listbox.config(yscrollcommand=self.potential_players_scrollbar.set)
+        self.potential_players_scrollbar.config(command=self.potential_players_listbox.yview)
+
+        self.available_players_listbox.config(yscrollcommand=self.available_players_scrollbar.set)
+        self.available_players_scrollbar.config(command=self.available_players_listbox.yview)
 
     # This section contains settings for player distribution and number of groups, and displays the current settings.
     # There are also buttons for editing player list and creating the groups here.
@@ -176,7 +192,7 @@ class GroupMakerGUI:
         right_section_frame = tk.Frame(self.root)
         right_section_frame.grid(row=1, column=1, sticky='n', padx=20)
 
-        distribution_frame = tk.LabelFrame(right_section_frame, text='Distribution Settings', font=('Arial', 14), bg='orange', labelanchor='n')
+        distribution_frame = tk.LabelFrame(right_section_frame, text='Distribution Settings', font=('Arial', 14), labelanchor='n')
         distribution_frame.pack(pady=(10, 0))
         even_veteran_distribution_state = tk.BooleanVar()   # Value is set to True so that checkbox defaults to checked.
         even_veteran_distribution_state.set(True)
@@ -189,7 +205,7 @@ class GroupMakerGUI:
             variable=even_skill_level_distribution_state, width=30, anchor='w')
         even_skill_level_distribution_checkbutton.pack()
 
-        number_of_groups_frame = tk.LabelFrame(right_section_frame, text='Number of Groups', font=('Arial', 14), bg='orange', labelanchor='n')
+        number_of_groups_frame = tk.LabelFrame(right_section_frame, text='Number of Groups', font=('Arial', 14), labelanchor='n')
         number_of_groups_frame.pack(pady=(20, 0))
         self.number_of_groups = tk.IntVar()
         self.number_of_groups.set(2)
@@ -211,7 +227,7 @@ class GroupMakerGUI:
 
         self.number_of_gyms = tk.IntVar()
         self.number_of_gyms.set(1)
-        number_of_gyms_frame = tk.LabelFrame(right_section_frame, text='Number of Gyms', font=('Arial', 14), bg='orange', labelanchor='n')
+        number_of_gyms_frame = tk.LabelFrame(right_section_frame, text='Number of Gyms', font=('Arial', 14), labelanchor='n')
         number_of_gyms_frame.pack(pady=(20, 0))
         one_gym_radiobutton = tk.Radiobutton(number_of_gyms_frame, text='1 Gym', variable=self.number_of_gyms,
             value=1, font=('Arial', 12), command=self.update_number_of_gyms_label, state='normal')
@@ -220,7 +236,7 @@ class GroupMakerGUI:
             value=2, font=('Arial', 12), command=self.update_number_of_gyms_label)
         two_gyms_radiobutton.grid(row=0, column=1, padx=5)
 
-        current_settings_frame = tk.LabelFrame(right_section_frame, text='Current Settings', font=('Arial', 14), bg='orange', labelanchor='n')
+        current_settings_frame = tk.LabelFrame(right_section_frame, text='Current Settings', font=('Arial', 14), labelanchor='n')
         current_settings_frame.pack(pady=(20, 0))
         number_of_available_players_label = tk.Label(current_settings_frame, text='Players available:',
             font=('Arial', 12), width=30, anchor='w')
@@ -235,7 +251,7 @@ class GroupMakerGUI:
         self.number_of_gyms_label.pack()
         self.update_number_of_gyms_label()
 
-        buttons_frame = tk.Frame(right_section_frame, bg='orange', padx=5, pady=5)
+        buttons_frame = tk.LabelFrame(right_section_frame, padx=5, pady=5)
         buttons_frame.pack(pady=(20, 0))
         self.edit_player_list_button = tk.Button(buttons_frame, text='Edit Player List', font=('Arial', 12), command=self.open_player_list_window)
         self.edit_player_list_button.grid(row=0, column=0, padx=10)
@@ -248,21 +264,50 @@ class GroupMakerGUI:
     def update_number_of_gyms_label(self) -> None:
         self.number_of_gyms_label.config(text=f'Number of gyms = {self.number_of_gyms.get()}')
 
-    # Opens a popup window to allow the user to see the current player list and make adjustments.
+    # - Opens a popup window to allow the user to see the current player list and make adjustments.
+    # - To get a scrollbar for the player list window, some tricky coding needed to be done as a workaround
+    #       because tkinter doesn't allow scrollbars to be used directly with a frame. Instead, an outer frame
+    #       needed to be created, and then a canvas needed to be put inside that frame because a canvas is
+    #       scrollable, and then the inner frame needed to be placed inside the canvas.
     def open_player_list_window(self) -> None:
         self.edit_player_list_button.config(state='disabled')
         self.player_list_popup_window = tk.Toplevel(self.root)
+        self.player_list_popup_window.geometry('928x608')
 
         # When the player list popup window is closed, execute the callback function.
         self.player_list_popup_window.protocol('WM_DELETE_WINDOW', self.on_player_list_window_closing)
 
         self.player_list_popup_window.title('Edit Player List')
 
-        # All widgets within this frame will get destroyed when rewriting the player list.
-        self.player_list_frame = tk.Frame(self.player_list_popup_window)
-        self.player_list_frame.pack()
+        # This frame contains the canvas and the inner frame.
+        player_list_outer_frame = tk.Frame(self.player_list_popup_window)
+        player_list_outer_frame.pack(fill='both', expand=1)
+
+        self.player_list_canvas = tk.Canvas(player_list_outer_frame, highlightthickness=0)   # Set the highlightthickness to 0 to hide the canvas border.
+        self.player_list_canvas.pack(side='left', fill='both', expand=1)
+
+        player_list_scrollbar = tk.Scrollbar(player_list_outer_frame, orient='vertical', command=self.player_list_canvas.yview)
+        player_list_scrollbar.pack(side='right', fill='y')
+
+        self.player_list_canvas.config(yscrollcommand=player_list_scrollbar.set)
+
+        # All widgets within this frame will get destroyed when updating the player list.
+        self.player_list_inner_frame = tk.Frame(self.player_list_canvas)
+        self.player_list_inner_frame.pack()
+
+        # Add the inner frame to a window in the canvas.
+        self.player_list_canvas.create_window((0,0), window=self.player_list_inner_frame, anchor='nw')
+
+        self.player_list_canvas.bind('<Configure>', lambda e: self.update_scroll_region())
+        self.player_list_inner_frame.bind('<Configure>', lambda e: self.update_scroll_region())
 
         self.update_player_list_frame()
+
+    # Updating the scroll region may be necessary when player names are added or removed from the player list
+    # or when the window is resized.
+    def update_scroll_region(self):
+        self.player_list_inner_frame.update_idletasks()
+        self.player_list_canvas.config(scrollregion = self.player_list_canvas.bbox('all'))
 
     # Turns the edit player list button back to normal and then destroys the player list popup window.
     def on_player_list_window_closing(self):
@@ -331,29 +376,28 @@ class GroupMakerGUI:
     def update_player_list_frame(self) -> None:
 
         # Destroy all widgets in the frame (clear the window).
-        for widget in self.player_list_frame.winfo_children():
+        for widget in self.player_list_inner_frame.winfo_children():
             widget.destroy()
 
-        edit_player_list_title = tk.Label(self.player_list_frame, text='Edit Player List', font=('Arial', 20))
+        edit_player_list_title = tk.Label(self.player_list_inner_frame, text='Edit Player List', font=('Arial', 20))
         edit_player_list_title.grid(row=0, column=0, columnspan=7)
-
-        blank_space_holding_header_label = tk.Label(self.player_list_frame, width=5)
+        blank_space_holding_header_label = tk.Label(self.player_list_inner_frame, width=5)
         blank_space_holding_header_label.grid(row=1, column=0)
-        player_count_header_label = tk.Label(self.player_list_frame, text='Player Count', font=('Arial', 10))
+        player_count_header_label = tk.Label(self.player_list_inner_frame, text='Player Count', font=('Arial', 10))
         player_count_header_label.grid(row=1, column=1, padx=20)
-        first_name_header_label = tk.Label(self.player_list_frame, text='First Name', font=('Arial', 10))
+        first_name_header_label = tk.Label(self.player_list_inner_frame, text='First Name', font=('Arial', 10))
         first_name_header_label.grid(row=1, column=2, padx=20)
-        last_name_header_label = tk.Label(self.player_list_frame, text='Last Name', font=('Arial', 10))
+        last_name_header_label = tk.Label(self.player_list_inner_frame, text='Last Name', font=('Arial', 10))
         last_name_header_label.grid(row=1, column=3, padx=20)
-        is_veteran_leader_header_label = tk.Label(self.player_list_frame, text='Is Veteran/Leader', font=('Arial', 10))
+        is_veteran_leader_header_label = tk.Label(self.player_list_inner_frame, text='Is Veteran/Leader', font=('Arial', 10))
         is_veteran_leader_header_label.grid(row=1, column=4, padx=20)
-        skill_level_header_label = tk.Label(self.player_list_frame, text='Skill Level (1 to 3)', font=('Arial', 10))
+        skill_level_header_label = tk.Label(self.player_list_inner_frame, text='Skill Level (1 to 3)', font=('Arial', 10))
         skill_level_header_label.grid(row=1, column=5, padx=20)
 
         for player_index in range(len(self.player_list)):
 
             # '#f73131' is red.
-            player_removal_button = tk.Button(self.player_list_frame, text='Remove', font=('Arial', 6), bg='#f73131',
+            player_removal_button = tk.Button(self.player_list_inner_frame, text='Remove', font=('Arial', 6), bg='#f73131',
                 command=lambda i=player_index: self.remove_player(i))
             player_removal_button.grid(row=player_index+2, column=0, padx=(20, 3), pady=1)
 
@@ -361,26 +405,26 @@ class GroupMakerGUI:
             if player_index % 2 == 0:   # If even number.
                 line_background_color = '#d9d9d9'   # Gray.
 
-            player_count_label = tk.Label(self.player_list_frame, text=player_index+1, font=('Arial', 10), bg=line_background_color)
+            player_count_label = tk.Label(self.player_list_inner_frame, text=player_index+1, font=('Arial', 10), bg=line_background_color)
             player_count_label.grid(row=player_index+2, column=1, sticky='nsew')
-            first_name_label = tk.Label(self.player_list_frame, text=self.player_list[player_index][0], font=('Arial', 10), bg=line_background_color)
+            first_name_label = tk.Label(self.player_list_inner_frame, text=self.player_list[player_index][0], font=('Arial', 10), bg=line_background_color)
             first_name_label.grid(row=player_index+2, column=2, sticky='nsew')
-            last_name_label = tk.Label(self.player_list_frame, text=self.player_list[player_index][1], font=('Arial', 10), bg=line_background_color)
+            last_name_label = tk.Label(self.player_list_inner_frame, text=self.player_list[player_index][1], font=('Arial', 10), bg=line_background_color)
             last_name_label.grid(row=player_index+2, column=3, sticky='nsew')
-            is_veteran_leader_label = tk.Label(self.player_list_frame, text=str(self.player_list[player_index][2]), font=('Arial', 10), bg=line_background_color)
+            is_veteran_leader_label = tk.Label(self.player_list_inner_frame, text=str(self.player_list[player_index][2]), font=('Arial', 10), bg=line_background_color)
             is_veteran_leader_label.grid(row=player_index+2, column=4, sticky='nsew')
-            skill_level_label = tk.Label(self.player_list_frame, text=self.player_list[player_index][3], font=('Arial', 10), bg=line_background_color)
+            skill_level_label = tk.Label(self.player_list_inner_frame, text=self.player_list[player_index][3], font=('Arial', 10), bg=line_background_color)
             skill_level_label.grid(row=player_index+2, column=5, sticky='nsew')
 
-        new_player_label = tk.Label(self.player_list_frame, text='New Player:', font=('Arial', 10))
+        new_player_label = tk.Label(self.player_list_inner_frame, text='New Player:', font=('Arial', 10))
         new_player_label.grid(row=len(self.player_list)+2, column=1, pady=25)
         self.first_name = tk.StringVar()
         self.first_name.set('')   # Empty string.
-        first_name_entry_box = tk.Entry(self.player_list_frame, font=('Arial', 10), textvariable=self.first_name)
+        first_name_entry_box = tk.Entry(self.player_list_inner_frame, font=('Arial', 10), textvariable=self.first_name)
         first_name_entry_box.grid(row=len(self.player_list)+2, column=2, padx=10)
         self.last_name = tk.StringVar()
         self.last_name.set('')   # Empty string.
-        last_name_entry_box = tk.Entry(self.player_list_frame, font=('Arial', 10), textvariable=self.last_name)
+        last_name_entry_box = tk.Entry(self.player_list_inner_frame, font=('Arial', 10), textvariable=self.last_name)
         last_name_entry_box.grid(row=len(self.player_list)+2, column=3, padx=10)
 
         self.first_name.trace_add('write', self.update_add_player_button_appearance)
@@ -388,7 +432,7 @@ class GroupMakerGUI:
 
         self.is_veteran_leader = tk.BooleanVar()
         self.is_veteran_leader.set(False)
-        is_veteran_leader_radiobuttons_frame = tk.LabelFrame(self.player_list_frame)
+        is_veteran_leader_radiobuttons_frame = tk.LabelFrame(self.player_list_inner_frame)
         is_veteran_leader_radiobuttons_frame.grid(row=len(self.player_list)+2, column=4, padx=10)
         is_veteran_leader_radiobutton_true = tk.Radiobutton(is_veteran_leader_radiobuttons_frame, text='True', font=('Arial', 10),
             variable=self.is_veteran_leader, value=True)
@@ -399,7 +443,7 @@ class GroupMakerGUI:
 
         self.skill_level = tk.IntVar()
         self.skill_level.set(3)
-        skill_level_radiobutton_frame = tk.LabelFrame(self.player_list_frame)
+        skill_level_radiobutton_frame = tk.LabelFrame(self.player_list_inner_frame)
         skill_level_radiobutton_frame.grid(row=len(self.player_list)+2, column=5, padx=10)
         skill_level_radiobutton_1 = tk.Radiobutton(skill_level_radiobutton_frame, text='1', font=('Arial', 10),
             variable=self.skill_level, value=1)
@@ -411,12 +455,13 @@ class GroupMakerGUI:
             variable=self.skill_level, value=3)
         skill_level_radiobutton_3.pack(side='left')
 
-        self.add_player_button = tk.Button(self.player_list_frame, text='Add Player', font=('Arial', 10), command=self.add_player)
+        self.add_player_button = tk.Button(self.player_list_inner_frame, text='Add Player', font=('Arial', 10), command=self.add_player)
         self.add_player_button.grid(row=len(self.player_list)+2, column=6, padx=10)
         self.update_add_player_button_appearance()
 
 
 
 
-        
+
+
 
