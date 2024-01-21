@@ -87,6 +87,8 @@ class GroupMakerGUI:
                 self.available_players.append(self.unavailable_players[index])
                 del self.unavailable_players[index]
 
+            self.update_number_of_players_per_group_label()
+            self.update_number_available_players_label()
             self.update_availability_labels_and_listboxes()
 
     # - This is a callback function that gets called when an item is selected within the potential listbox.
@@ -100,6 +102,8 @@ class GroupMakerGUI:
             self.unavailable_players.append(self.potential_players[index])
             del self.potential_players[index]
 
+            self.update_number_of_players_per_group_label()
+            self.update_number_available_players_label()
             self.update_availability_labels_and_listboxes()
 
     # - This is a callback function that gets called when an item is selected within the available listbox.
@@ -113,6 +117,8 @@ class GroupMakerGUI:
             self.unavailable_players.append(self.available_players[index])
             del self.available_players[index]
 
+            self.update_number_of_players_per_group_label()
+            self.update_number_available_players_label()
             self.update_availability_labels_and_listboxes()
 
     def activate_listbox_button_handling(self):
@@ -194,21 +200,23 @@ class GroupMakerGUI:
 
         distribution_frame = tk.LabelFrame(right_section_frame, text='Distribution Settings', font=('Arial', 14), labelanchor='n')
         distribution_frame.pack(pady=(10, 0))
-        even_veteran_distribution_state = tk.BooleanVar()   # Value is set to True so that checkbox defaults to checked.
-        even_veteran_distribution_state.set(True)
+
+        self.even_veteran_distribution_state = tk.BooleanVar()   # Value is set to True so that checkbox defaults to checked.
+        self.even_veteran_distribution_state.set(True)
         even_veteran_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Even Veteran/Leader Distribution', font=('Arial', 12),
-            variable=even_veteran_distribution_state, width=30, anchor='w')
+            variable=self.even_veteran_distribution_state, width=30, anchor='w')
         even_veteran_distribution_checkbutton.pack()
-        even_skill_level_distribution_state = tk.BooleanVar()
-        even_skill_level_distribution_state.set(True)
+
+        self.even_skill_level_distribution_state = tk.BooleanVar()
+        self.even_skill_level_distribution_state.set(True)
         even_skill_level_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Even Skill Level Distribution', font=('Arial', 12),
-            variable=even_skill_level_distribution_state, width=30, anchor='w')
+            variable=self.even_skill_level_distribution_state, width=30, anchor='w')
         even_skill_level_distribution_checkbutton.pack()
 
         number_of_groups_frame = tk.LabelFrame(right_section_frame, text='Number of Groups', font=('Arial', 14), labelanchor='n')
         number_of_groups_frame.pack(pady=(20, 0))
         self.number_of_groups = tk.IntVar()
-        self.number_of_groups.set(2)
+        self.number_of_groups.set(3)
         two_groups_radiobutton = tk.Radiobutton(number_of_groups_frame, text='2 Groups', variable=self.number_of_groups,
             value=2, font=('Arial', 12), command=self.update_number_of_groups_label)
         two_groups_radiobutton.grid(row=0, column=0, padx=5)
@@ -236,14 +244,15 @@ class GroupMakerGUI:
             value=2, font=('Arial', 12), command=self.update_number_of_gyms_label)
         two_gyms_radiobutton.grid(row=0, column=1, padx=5)
 
+        # Current settings.
         current_settings_frame = tk.LabelFrame(right_section_frame, text='Current Settings', font=('Arial', 14), labelanchor='n')
         current_settings_frame.pack(pady=(20, 0))
-        number_of_available_players_label = tk.Label(current_settings_frame, text='Players available:',
-            font=('Arial', 12), width=30, anchor='w')
-        number_of_available_players_label.pack()
-        min_number_of_players_per_group_label = tk.Label(current_settings_frame, text='Minimum players per group:',
-            font=('Arial', 12), width=30, anchor='w')
-        min_number_of_players_per_group_label.pack()
+        self.number_of_available_players_label = tk.Label(current_settings_frame, font=('Arial', 12), width=30, anchor='w')
+        self.number_of_available_players_label.pack()
+        self.update_number_available_players_label()
+        self.number_of_players_per_group_label = tk.Label(current_settings_frame, font=('Arial', 12), width=30, anchor='w')
+        self.number_of_players_per_group_label.pack()
+        self.update_number_of_players_per_group_label()
         self.number_of_groups_label = tk.Label(current_settings_frame, font=('Arial', 12), width=30, anchor='w')
         self.number_of_groups_label.pack()
         self.update_number_of_groups_label()
@@ -257,6 +266,30 @@ class GroupMakerGUI:
         self.edit_player_list_button.grid(row=0, column=0, padx=10)
         create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white')
         create_groups_button.grid(row=0, column=1, padx=10)
+
+    def update_number_available_players_label(self):
+        min_number_players = len(self.available_players)
+        max_number_players = min_number_players + len(self.potential_players)
+
+
+        if len(self.potential_players) == 0:
+            self.number_of_available_players_label.config(text=f'Players available: {min_number_players}')
+        else:
+            self.number_of_available_players_label.config(text=f'Players available: {min_number_players} - {max_number_players}')
+
+    def update_number_of_players_per_group_label(self):
+        min_number_players = len(self.available_players)
+        max_number_players = min_number_players + len(self.potential_players)
+
+        min_players_per_group = (min_number_players // self.number_of_groups.get())
+
+        # Rounds up if the number is a decimal.
+        max_players_per_group = (max_number_players // self.number_of_groups.get()) + (max_number_players % self.number_of_groups.get() > 0)
+
+        if min_players_per_group == max_players_per_group:
+            self.number_of_players_per_group_label.config(text=f'Players per group: {min_players_per_group}')
+        else:
+            self.number_of_players_per_group_label.config(text=f'Players per group: {min_players_per_group} - {max_players_per_group}')
 
     def update_number_of_groups_label(self) -> None:
         self.number_of_groups_label.config(text=f'Number of groups = {self.number_of_groups.get()}')
