@@ -199,19 +199,19 @@ class GroupMakerGUI:
         right_section_frame = tk.Frame(self.root)
         right_section_frame.grid(row=1, column=1, sticky='n', padx=20)
 
-        distribution_frame = tk.LabelFrame(right_section_frame, text='Distribution Settings', font=('Arial', 14), labelanchor='n')
+        distribution_frame = tk.LabelFrame(right_section_frame, text='Balance Settings', font=('Arial', 14), labelanchor='n')
         distribution_frame.pack(pady=(10, 0))
 
-        self.even_veteran_distribution_state = tk.BooleanVar()   # Value is set to True so that checkbox defaults to checked.
-        self.even_veteran_distribution_state.set(True)
-        even_veteran_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Even Veteran/Leader Distribution', font=('Arial', 12),
-            variable=self.even_veteran_distribution_state, width=30, anchor='w')
+        self.enable_veteran_balancing = tk.BooleanVar()   # Value is set to True so that checkbox defaults to checked.
+        self.enable_veteran_balancing.set(True)
+        even_veteran_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Balance Veterans', font=('Arial', 12),
+            variable=self.enable_veteran_balancing, width=30, anchor='w')
         even_veteran_distribution_checkbutton.pack()
 
-        self.even_skill_level_distribution_state = tk.BooleanVar()
-        self.even_skill_level_distribution_state.set(True)
-        even_skill_level_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Even Skill Level Distribution', font=('Arial', 12),
-            variable=self.even_skill_level_distribution_state, width=30, anchor='w')
+        self.enable_skill_balancing = tk.BooleanVar()
+        self.enable_skill_balancing.set(True)
+        even_skill_level_distribution_checkbutton = tk.Checkbutton(distribution_frame, text='Balance Skill Level', font=('Arial', 12),
+            variable=self.enable_skill_balancing, width=30, anchor='w')
         even_skill_level_distribution_checkbutton.pack()
 
         number_of_groups_frame = tk.LabelFrame(right_section_frame, text='Number of Groups', font=('Arial', 14), labelanchor='n')
@@ -268,7 +268,7 @@ class GroupMakerGUI:
 
         create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white',
             command = lambda: group_generation.generate_list(self.number_of_groups.get(), self.available_players, self.potential_players, 
-            self.even_veteran_distribution_state.get(), self.even_skill_level_distribution_state.get()))   
+            self.enable_veteran_balancing.get(), self.enable_skill_balancing.get()))   
         create_groups_button.grid(row=0, column=1, padx=10)
 
     def update_number_available_players_label(self):
@@ -379,7 +379,7 @@ class GroupMakerGUI:
                 break
 
         if does_player_already_exist == False:
-            current_player_data = [current_first_name, current_last_name, self.is_veteran_leader.get(), self.skill_level.get()]
+            current_player_data = [current_first_name, current_last_name, self.is_veteran.get(), self.skill_level.get()]
 
             self.player_list.append(current_player_data)
             self.player_list.sort()   # Sorts rows so the names are alphabetically organized.
@@ -426,8 +426,8 @@ class GroupMakerGUI:
         first_name_header_label.grid(row=1, column=2, padx=20)
         last_name_header_label = tk.Label(self.player_list_inner_frame, text='Last Name', font=('Arial', 10))
         last_name_header_label.grid(row=1, column=3, padx=20)
-        is_veteran_leader_header_label = tk.Label(self.player_list_inner_frame, text='Is Veteran/Leader', font=('Arial', 10))
-        is_veteran_leader_header_label.grid(row=1, column=4, padx=20)
+        veteran_status_header_label = tk.Label(self.player_list_inner_frame, text='Veteran Status', font=('Arial', 10))
+        veteran_status_header_label.grid(row=1, column=4, padx=20)
         skill_level_header_label = tk.Label(self.player_list_inner_frame, text='Skill Level (1 to 3)', font=('Arial', 10))
         skill_level_header_label.grid(row=1, column=5, padx=20)
 
@@ -448,8 +448,8 @@ class GroupMakerGUI:
             first_name_label.grid(row=player_index+2, column=2, sticky='nsew')
             last_name_label = tk.Label(self.player_list_inner_frame, text=self.player_list[player_index][1], font=('Arial', 10), bg=line_background_color)
             last_name_label.grid(row=player_index+2, column=3, sticky='nsew')
-            is_veteran_leader_label = tk.Label(self.player_list_inner_frame, text=str(self.player_list[player_index][2]), font=('Arial', 10), bg=line_background_color)
-            is_veteran_leader_label.grid(row=player_index+2, column=4, sticky='nsew')
+            veteran_status_label = tk.Label(self.player_list_inner_frame, text=str(self.player_list[player_index][2]), font=('Arial', 10), bg=line_background_color)
+            veteran_status_label.grid(row=player_index+2, column=4, sticky='nsew')
             skill_level_label = tk.Label(self.player_list_inner_frame, text=self.player_list[player_index][3], font=('Arial', 10), bg=line_background_color)
             skill_level_label.grid(row=player_index+2, column=5, sticky='nsew')
 
@@ -467,16 +467,16 @@ class GroupMakerGUI:
         self.first_name.trace_add('write', self.update_add_player_button_appearance)
         self.last_name.trace_add('write', self.update_add_player_button_appearance)
 
-        self.is_veteran_leader = tk.BooleanVar()
-        self.is_veteran_leader.set(False)
-        is_veteran_leader_radiobuttons_frame = tk.LabelFrame(self.player_list_inner_frame)
-        is_veteran_leader_radiobuttons_frame.grid(row=len(self.player_list)+2, column=4, padx=10)
-        is_veteran_leader_radiobutton_true = tk.Radiobutton(is_veteran_leader_radiobuttons_frame, text='True', font=('Arial', 10),
-            variable=self.is_veteran_leader, value=True)
-        is_veteran_leader_radiobutton_true.pack(side='left')
-        is_veteran_leader_radiobutton_false = tk.Radiobutton(is_veteran_leader_radiobuttons_frame, text='False', font=('Arial', 10),
-            variable=self.is_veteran_leader, value=False)
-        is_veteran_leader_radiobutton_false.pack(side='left')
+        self.is_veteran = tk.BooleanVar()
+        self.is_veteran.set(False)
+        is_veteran_radiobuttons_frame = tk.LabelFrame(self.player_list_inner_frame)
+        is_veteran_radiobuttons_frame.grid(row=len(self.player_list)+2, column=4, padx=10)
+        is_veteran_radiobutton_true = tk.Radiobutton(is_veteran_radiobuttons_frame, text='True', font=('Arial', 10),
+            variable=self.is_veteran, value=True)
+        is_veteran_radiobutton_true.pack(side='left')
+        is_veteran_radiobutton_false = tk.Radiobutton(is_veteran_radiobuttons_frame, text='False', font=('Arial', 10),
+            variable=self.is_veteran, value=False)
+        is_veteran_radiobutton_false.pack(side='left')
 
         self.skill_level = tk.IntVar()
         self.skill_level.set(3)

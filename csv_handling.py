@@ -2,7 +2,7 @@
 import csv
 
 CSV_FILE = 'players.csv'
-HEADER_FIELD_NAMES_LIST = ['First Name', 'Last Name', 'Is Veteran / Leader', 'Skill Level (1 to 3)']
+HEADER_FIELD_NAMES_LIST = ['First Name', 'Last Name', 'Veteran Status', 'Skill Level (1 to 3)']
 
 # - Creates a blank CSV file with a header. The file location is localized.
 def create_blank_csv_with_header() -> None:
@@ -32,13 +32,13 @@ def read_csv_to_list() -> list:
 
         data = []
         for row in reader:
-            # row = [First Name, Last Name, Veteran / Leader, Skill (1 to 3)]
+            # row = [First Name, Last Name, Veteran Status, Skill (1 to 3)]
             first_name = row[0]
             last_name = row[1]
-            is_veteran_leader = True if row[2] == 'True' else False
+            is_veteran = True if row[2] == 'True' else False
             skill_level = int(row[3])
 
-            data.append([first_name, last_name, is_veteran_leader, skill_level])
+            data.append([first_name, last_name, is_veteran, skill_level])
 
         return data
 
