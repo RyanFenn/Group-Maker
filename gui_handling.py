@@ -2,6 +2,7 @@
 import tkinter as tk
 from tkinter import messagebox
 import csv_handling
+import group_generation
 
 class GroupMakerGUI:
     def __init__(self) -> None:
@@ -264,7 +265,10 @@ class GroupMakerGUI:
         buttons_frame.pack(pady=(20, 0))
         self.edit_player_list_button = tk.Button(buttons_frame, text='Edit Player List', font=('Arial', 12), command=self.open_player_list_window)
         self.edit_player_list_button.grid(row=0, column=0, padx=10)
-        create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white')
+
+        create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white',
+            command = lambda: group_generation.generate_list(self.number_of_groups.get(), self.available_players, self.potential_players, 
+            self.even_veteran_distribution_state.get(), self.even_skill_level_distribution_state.get()))   
         create_groups_button.grid(row=0, column=1, padx=10)
 
     def update_number_available_players_label(self):
