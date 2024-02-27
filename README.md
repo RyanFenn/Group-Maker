@@ -6,3 +6,4 @@
 
 ![Alt text](images/main-window.png)
 ![Alt text](images/player-list-window.png)
+![Alt text](images/groups-window.png)
