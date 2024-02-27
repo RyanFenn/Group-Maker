@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import messagebox
 import csv_handling
 import group_generation
+import pyperclip
 
 class GroupMakerGUI:
     def __init__(self) -> None:
@@ -517,8 +518,20 @@ class GroupMakerGUI:
 
         self.group_display_frame = tk.Frame(self.group_display_popup_window)
         self.group_display_frame.pack()
-        self.swap_players_frame = tk.Frame(self.group_display_popup_window)
+        self.swap_players_frame = tk.LabelFrame(self.group_display_popup_window, text='Swap Players', font=('Arial', 12), padx=15, pady=15, labelanchor='n')
         self.swap_players_frame.pack(pady=(80,0))
+
+        copy_to_clipboard_button = tk.Button(self.group_display_popup_window, text='Copy to Clipboard', font=('Arial', 10),
+            command=self.copy_list_to_clipboard)
+        copy_to_clipboard_button.pack(pady=30)
+
+        info_label_frame = tk.Frame(self.group_display_popup_window)
+        info_label_frame.pack(pady=30, side='bottom')
+
+        INFO_STRING = 'Note: An asterisk (*) indicates that the player is a veteran. Brackets around a name indicates the player is potentially available.'
+        info_label = tk.Label(info_label_frame, text=INFO_STRING, font=('Arial', 10))
+        info_label.pack()
+
         self.update_displayed_groups()
 
     # Destroys all widgets in each frame before creating widgets. This is done so that widgets aren't written overtop of old widgets.
@@ -557,9 +570,6 @@ class GroupMakerGUI:
                 player_label.grid(row=player_index+1, column=group_index, padx=50, sticky='w')   # Note that row 0 is for the header label.
                 player_number += 1        
 
-        swap_players_header_label = tk.Label(self.swap_players_frame, text='Swap Players', font=('Arial', 12, 'underline'))
-        swap_players_header_label.grid(row=0, columnspan=2, pady=(0,10))
-
         # The group display window should have numbers in front of each name. These numbers are to be input into the text boxes for swapping.
         self.player_A_instructions_label = tk.Label(self.swap_players_frame, text='Player A Number: ', font=('Arial', 10))
         self.player_A_instructions_label.grid(row=1, column=0)
@@ -573,8 +583,8 @@ class GroupMakerGUI:
 
         # '#2b5ffc' is blue.
         swap_button = tk.Button(self.swap_players_frame, text='Swap', font=('Arial', 10), bg='#2b5ffc', fg='white', 
-            command=self.swap_players_and_update_window)
-        swap_button.grid(row=3, columnspan=2, pady=15)
+            command=self.swap_players_and_update_window, padx=20, pady=5)
+        swap_button.grid(row=1, column=3, rowspan=2, padx=20)
 
     # - Swaps the players in the display groups window and updates the window.
     # - Returns early without swapping or updating if the player number entry is outside of the range, a
@@ -634,9 +644,26 @@ class GroupMakerGUI:
 
             test_player_number += 1
 
+    # - Copies the group list to the computers clipboard, so that the list can be pasted into a message.
+    # - Brackets are included for potential players, but no asterisk (*) will be put in front of a veteran player's name.
+    def copy_list_to_clipboard(self):
 
+        string_to_copy = ''
 
+        for group_index in range(len(self.groups_list)):
+            if group_index > 0: string_to_copy += '\n'
 
+            string_to_copy += f'=== Group {group_index+1} ===\n'
 
+            for player_index in range(len(self.groups_list[group_index])):
+                first_name = f'{self.groups_list[group_index][player_index][group_generation.PLAYER_FIRST_NAME_INDEX]}'
+                last_name = f'{self.groups_list[group_index][player_index][group_generation.PLAYER_LAST_NAME_INDEX]}'
+                formatted_full_name = f'{first_name} {last_name}'
 
+                if self.groups_list[group_index][player_index][group_generation.PLAYER_AVAILABILITY_INDEX] == 'potential':
+                    formatted_full_name = f'({formatted_full_name})'
 
+                string_to_copy += formatted_full_name
+                string_to_copy += '\n'
+
+        pyperclip.copy(string_to_copy)

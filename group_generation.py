@@ -143,7 +143,7 @@ def generate_list(number_of_groups: int, available_players: list, potential_play
         
             if is_player_qualified:
                 current_group_index = get_next_group_index(current_group_index, number_of_groups)
-                print(f'Added player to group : {players[player_index]}')
+                # print(f'Added player to group : {players[player_index]}')
                 groups[current_group_index].append(players[player_index])
                 del players[player_index]
                 break   # Breaks out of the player for loop.
@@ -159,7 +159,6 @@ def generate_list(number_of_groups: int, available_players: list, potential_play
             raise SystemExit            
 
     return groups
-
 
 
 
