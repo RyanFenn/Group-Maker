@@ -266,10 +266,10 @@ class GroupMakerGUI:
         self.edit_player_list_button = tk.Button(buttons_frame, text='Edit Player List', font=('Arial', 12), command=self.open_player_list_window)
         self.edit_player_list_button.grid(row=0, column=0, padx=10)
 
-        create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white',
-            command = lambda: group_generation.generate_list(self.number_of_groups.get(), self.available_players, self.potential_players, 
-            self.enable_veteran_balancing.get(), self.enable_skill_balancing.get()))   
-        create_groups_button.grid(row=0, column=1, padx=10)
+        self.create_groups_button = tk.Button(buttons_frame, text='Create Groups', font=('Arial', 12), bg='green', fg='white',
+            command=self.open_group_display_window)
+
+        self.create_groups_button.grid(row=0, column=1, padx=10)
 
     def update_number_available_players_label(self):
         min_number_players = len(self.available_players)
@@ -351,6 +351,11 @@ class GroupMakerGUI:
         self.edit_player_list_button.config(state='normal')
         self.player_list_popup_window.destroy()
 
+    # Turns the button that creates groups back to normal and then destroys the group display window.
+    def on_group_display_window_closing(self):
+        self.create_groups_button.config(state='normal')
+        self.group_display_popup_window.destroy()
+
     # - Makes sure that the entry boxes for the first and last name are not empty. If one or both of these
     #       entry boxes are empty, the add player button will be disabled.
     # - This method is called every time self.first_name and self.last_name are modified (using the entry boxes).
@@ -379,7 +384,7 @@ class GroupMakerGUI:
                 break
 
         if does_player_already_exist == False:
-            current_player_data = [current_first_name, current_last_name, self.is_veteran.get(), self.skill_level.get()]
+            current_player_data = [current_first_name, current_last_name, self.is_veteran.get(), self.skill_level.get()]   
 
             self.player_list.append(current_player_data)
             self.player_list.sort()   # Sorts rows so the names are alphabetically organized.
@@ -409,7 +414,7 @@ class GroupMakerGUI:
         self.update_player_list_frame()
         csv_handling.write_list_to_csv(self.player_list)
 
-    # Destroys all widgets in the frame before creating widgets. This is done so that widgetes aren't written overtop of old widgets.
+    # Destroys all widgets in the frame before creating widgets. This is done so that widgets aren't written overtop of old widgets.
     def update_player_list_frame(self) -> None:
 
         # Destroy all widgets in the frame (clear the window).
@@ -495,6 +500,139 @@ class GroupMakerGUI:
         self.add_player_button = tk.Button(self.player_list_inner_frame, text='Add Player', font=('Arial', 10), command=self.add_player)
         self.add_player_button.grid(row=len(self.player_list)+2, column=6, padx=10)
         self.update_add_player_button_appearance()
+
+    # - Opens a popup window that displays the generated groups.
+    def open_group_display_window(self) -> None:
+        self.groups_list = group_generation.generate_list(self.number_of_groups.get(), self.available_players, self.potential_players,
+            self.enable_veteran_balancing.get(), self.enable_skill_balancing.get())
+
+        self.create_groups_button.config(state='disabled')
+        self.group_display_popup_window = tk.Toplevel(self.root)
+        self.group_display_popup_window.geometry('1200x608')
+
+        # When the group display popup window is closed, execute the callback function.
+        self.group_display_popup_window.protocol('WM_DELETE_WINDOW', self.on_group_display_window_closing)
+
+        self.group_display_popup_window.title('Groups')
+
+        self.group_display_frame = tk.Frame(self.group_display_popup_window)
+        self.group_display_frame.pack()
+        self.swap_players_frame = tk.Frame(self.group_display_popup_window)
+        self.swap_players_frame.pack(pady=(80,0))
+        self.update_displayed_groups()
+
+    # Destroys all widgets in each frame before creating widgets. This is done so that widgets aren't written overtop of old widgets.
+    def update_displayed_groups(self):
+
+        # Destroy all widgets in the frame (clear the window).
+        for widget in self.group_display_frame.winfo_children():
+            widget.destroy()
+
+        for widget in self.swap_players_frame.winfo_children():
+            widget.destroy()
+
+        # Column header labels
+        for group_index in range(self.number_of_groups.get()):
+            group_number_header_label = tk.Label(self.group_display_frame, text=f'Group {group_index+1}', font=('Arial', 12, 'underline'))
+            group_number_header_label.grid(row=0, column=group_index, padx=50, pady=(80,0))
+
+        player_number = 1
+
+        for group_index in range(self.number_of_groups.get()):
+            for player_index in range(len(self.groups_list[group_index])):
+                first_name = self.groups_list[group_index][player_index][group_generation.PLAYER_FIRST_NAME_INDEX]
+                last_name = self.groups_list[group_index][player_index][group_generation.PLAYER_LAST_NAME_INDEX]
+                formatted_name = f'{first_name} {last_name}'
+
+                # If potential player, add parenthesis around the first ane last name.
+                # The availability element should have been appended when merging the available and potential players into one list.
+                if self.groups_list[group_index][player_index][group_generation.PLAYER_AVAILABILITY_INDEX] == 'potential':
+                    formatted_name = '(' + formatted_name + ')'
+
+                # If veteran player, add asterisk (*) to the start of the string.
+                if self.groups_list[group_index][player_index][group_generation.PLAYER_VETERAN_INDEX] == True:
+                    formatted_name = '*' + formatted_name
+
+                player_label = tk.Label(self.group_display_frame, text=f'{player_number}. {formatted_name}', font=('Arial', 10))
+                player_label.grid(row=player_index+1, column=group_index, padx=50, sticky='w')   # Note that row 0 is for the header label.
+                player_number += 1        
+
+        swap_players_header_label = tk.Label(self.swap_players_frame, text='Swap Players', font=('Arial', 12, 'underline'))
+        swap_players_header_label.grid(row=0, columnspan=2, pady=(0,10))
+
+        # The group display window should have numbers in front of each name. These numbers are to be input into the text boxes for swapping.
+        self.player_A_instructions_label = tk.Label(self.swap_players_frame, text='Player A Number: ', font=('Arial', 10))
+        self.player_A_instructions_label.grid(row=1, column=0)
+        self.player_A_number_entry = tk.Entry(self.swap_players_frame, width=6)
+        self.player_A_number_entry.grid(row=1, column=1)
+
+        self.player_B_instructions_label = tk.Label(self.swap_players_frame, text='Player B Number: ', font=('Arial', 10))
+        self.player_B_instructions_label.grid(row=2, column=0, pady=5)     
+        self.player_B_number_entry = tk.Entry(self.swap_players_frame, width=6)
+        self.player_B_number_entry.grid(row=2, column=1)
+
+        # '#2b5ffc' is blue.
+        swap_button = tk.Button(self.swap_players_frame, text='Swap', font=('Arial', 10), bg='#2b5ffc', fg='white', 
+            command=self.swap_players_and_update_window)
+        swap_button.grid(row=3, columnspan=2, pady=15)
+
+    # - Swaps the players in the display groups window and updates the window.
+    # - Returns early without swapping or updating if the player number entry is outside of the range, a
+    #       player entry is blank, or an entry is not a digit.
+    def swap_players_and_update_window(self):
+        MIN_PLAYER_NUMBER_ENTRY = 1
+        MAX_PLAYER_NUMBER_ENTRY = len(self.available_players) + len(self.potential_players)
+
+        if self.player_A_number_entry.get() == '' or self.player_B_number_entry.get() == '':
+            print('ERROR: Make sure player A and B number entries are not empty.')
+
+        elif not self.player_A_number_entry.get().isdigit() or not self.player_B_number_entry.get().isdigit():
+            print('ERROR: Make sure player A and B number entries are digits.')
+
+        player_A_number_entry_int = int(self.player_A_number_entry.get())
+        player_B_number_entry_int = int(self.player_B_number_entry.get())
+
+        if player_A_number_entry_int < MIN_PLAYER_NUMBER_ENTRY or player_A_number_entry_int > MAX_PLAYER_NUMBER_ENTRY:
+            print('ERROR: Player A number entry is outside of range.')
+            return
+
+        if player_B_number_entry_int < MIN_PLAYER_NUMBER_ENTRY or player_B_number_entry_int > MAX_PLAYER_NUMBER_ENTRY:
+            print('ERROR: Player B number entry is outside of range.')
+            return
+
+        group_index_A, player_index_A = self.convert_player_number_to_indexes(player_A_number_entry_int)
+        group_index_B, player_index_B = self.convert_player_number_to_indexes(player_B_number_entry_int)
+
+        # Swaps players.
+        self.groups_list[group_index_A][player_index_A], self.groups_list[group_index_B][player_index_B] = \
+            self.groups_list[group_index_B][player_index_B], self.groups_list[group_index_A][player_index_A]
+
+        self.update_displayed_groups()
+
+    # - Returns a tuple containing the group index and the player index that coresponds to the player number for the group list.
+    # - For example, on the display groups window, if the player number was 1, this method would return (0,0) because it is the
+    #       first group (index = 0) and the first player in the group (index = 0).
+    # - Raises SystemExit if there is an error.
+    def convert_player_number_to_indexes(self, player_number: int) -> tuple:
+
+        test_player_number = 1
+        group_index, player_index = 0, 0
+
+        while True:
+            if test_player_number == player_number:
+                return (group_index, player_index)
+            
+            if player_index < len(self.groups_list[group_index])-1:
+                player_index += 1
+            else:
+                group_index += 1
+                player_index = 0
+            
+            if group_index >= self.number_of_groups.get():
+                print('ERROR: Group index is out of range.')
+                raise SystemExit
+
+            test_player_number += 1
 
 
 

@@ -1,6 +1,8 @@
 
 import random
 
+PLAYER_FIRST_NAME_INDEX = 0
+PLAYER_LAST_NAME_INDEX = 1
 PLAYER_VETERAN_INDEX = 2
 PLAYER_SKILL_INDEX = 3
 PLAYER_AVAILABILITY_INDEX = 4   # This item is appended during group generation.
@@ -63,7 +65,7 @@ def print_groups(groups, enable_name_formatting):
 
     for group in groups:
         for player in group:
-            temp_string = f'{player[0]} {player[1]}'
+            temp_string = f'{player[PLAYER_FIRST_NAME_INDEX]} {player[PLAYER_LAST_NAME_INDEX]}'
 
             if enable_name_formatting:
 
@@ -98,19 +100,27 @@ def get_next_group_index(current_index, number_of_groups):
 def generate_list(number_of_groups: int, available_players: list, potential_players: list, en_veteran_balancing: bool,
     en_skill_balancing: bool) -> list:
 
-    groups = [[] for i in range(number_of_groups)]   # Initializing lists within list.
+    groups = [[] for _ in range(number_of_groups)]   # Initializing lists within list.
     players = []
 
-    # Add all available players to the players list, appending a new item for each available player called "available".
-    # This new item should have an index number of 4 (PLAYER_AVAILABILITY_INDEX).
+    # Add all available players to the players list, while also setting the availility status to "available".
+    # The availability status item should have an index number of 4 (PLAYER_AVAILABILITY_INDEX).
     for available_player in available_players:
-        available_player.append('available')
+        try:
+            available_player[PLAYER_AVAILABILITY_INDEX] = 'available'
+        except IndexError:
+            available_player.append('available')
+
         players.append(available_player)
 
-    # Add all potential players to the players list, appending a new item for each potential player called "potential".
-    # This new item should have an index number of 4 (PLAYER_AVAILABILITY_INDEX).
+    # Add all potential players to the players list, while also setting the availility status to "potential".
+    # The availability status item should have an index number of 4 (PLAYER_AVAILABILITY_INDEX).
     for potential_player in potential_players:
-        potential_player.append('potential')
+        try:
+            potential_player[PLAYER_AVAILABILITY_INDEX] = 'potential'
+        except IndexError:
+            potential_player.append('potential')
+
         players.append(potential_player)
 
     random.shuffle(players)
@@ -147,10 +157,6 @@ def generate_list(number_of_groups: int, available_players: list, potential_play
             # To fix this error, make sure every player meets the qualifications of one of the player_select_priority options.
             print('\nERROR: One or more players could not be added to a group.')
             raise SystemExit            
-
-    #@@@ remove after testing     
-    print()
-    print_groups(groups, True)
 
     return groups
 
