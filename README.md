@@ -18,7 +18,7 @@ An application for creating random groups for sports.
 - When running the executable on Windows, the file might be seen as a virus. One solution for this problem is to add the executable file path to an exclusion list so that Microsoft Defender Antivirus doesn't scan the file. To do this in Windows, search for "Virus & threat protection". Within the "Virus & threat protection settings" section, click on "Manage settings", and then in the "Exclusions" section, select "Add or remove exclusions". Add the executable file path. Note that this part is only necessary if Windows' antivirus protection is giving warnings, etc.
 
 ### Antivirus Issues:
-- Windows' antivirus protection might stop the ZIP folder from being downloaded or accessed. The root cause of this problem is the existence of the executable file within the "dist" folder. To prevent this issue, the dist folder containing the executable file has been removed from the repository. To access this executable file, it can be found in previous commits. You can try downloading the commit from February 28, 2024 (f84e0fc95cca8811168c77314dc19100d4738981).
+- Antivirus protection (Chrome, Windows, etc.) might stop the ZIP folder from being downloaded or accessed. The root cause of this problem is the existence of the executable file within the "dist" folder. To prevent this issue, the dist folder containing the executable file has been removed from the repository. To access this executable file, it can be found in previous commits. You can try downloading the commit from February 28, 2024 (f84e0fc95cca8811168c77314dc19100d4738981).
 - Remember that the executable file can also be created after downloading the ZIP folder.
 
 ### Screenshots:
